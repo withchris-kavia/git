@@ -439,12 +439,23 @@ int odb_source_loose_read_object_info(struct odb_source *source,
 	 */
 	if (!oi || (!oi->typep && !oi->sizep && !oi->contentp)) {
 		struct stat st;
-		if ((!oi || !oi->disk_sizep) && (flags & OBJECT_INFO_QUICK))
-			return quick_has_loose(source->loose, oid) ? 0 : -1;
+
+		if ((!oi || !oi->disk_sizep) && (flags & OBJECT_INFO_QUICK)) {
+			status = quick_has_loose(source->loose, oid) ? 0 : -1;
+			if (!status && oi)
+				oi->whence = OI_LOOSE;
+			return status;
+		}
+
 		if (stat_loose_object(source->loose, oid, &st, &path) < 0)
 			return -1;
-		if (oi && oi->disk_sizep)
-			*oi->disk_sizep = st.st_size;
+
+		if (oi) {
+			if (oi->disk_sizep)
+				*oi->disk_sizep = st.st_size;
+			oi->whence = OI_LOOSE;
+		}
+
 		return 0;
 	}
 
