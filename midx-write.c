@@ -1544,7 +1544,8 @@ static int write_midx_internal(struct write_midx_opts *opts)
 		struct strbuf lock_name = STRBUF_INIT;
 
 		get_midx_chain_filename(opts->source, &lock_name);
-		hold_lock_file_for_update(&lk, lock_name.buf, LOCK_DIE_ON_ERROR);
+		hold_lock_file_for_update(&lk, lock_name.buf, LOCK_DIE_ON_ERROR,
+					  LOCKFILE_PID_MIDX);
 		strbuf_release(&lock_name);
 
 		incr = mks_tempfile_m(midx_name.buf, 0444);
@@ -1562,7 +1563,8 @@ static int write_midx_internal(struct write_midx_opts *opts)
 		f = hashfd(r->hash_algo, get_tempfile_fd(incr),
 			   get_tempfile_path(incr));
 	} else {
-		hold_lock_file_for_update(&lk, midx_name.buf, LOCK_DIE_ON_ERROR);
+		hold_lock_file_for_update(&lk, midx_name.buf, LOCK_DIE_ON_ERROR,
+					  LOCKFILE_PID_MIDX);
 		f = hashfd(r->hash_algo, get_lock_file_fd(&lk),
 			   get_lock_file_path(&lk));
 	}
